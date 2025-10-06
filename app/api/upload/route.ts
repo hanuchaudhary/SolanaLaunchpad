@@ -1,0 +1,244 @@
+import { NextResponse } from "next/server";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { DynamicBondingCurveClient } from "@meteora-ag/dynamic-bonding-curve-sdk";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+
+const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL as string;
+const POOL_CONFIG_KEY = process.env.POOL_CONFIG_KEY;
+
+const DO_SPACES_ACCESS_KEY_ID = process.env.DO_SPACES_ACCESS_KEY_ID as string;
+const DO_SPACES_SECRET_ACCESS_KEY = process.env
+  .DO_SPACES_SECRET_ACCESS_KEY as string;
+const DO_SPACES_ENDPOINT = process.env.DO_SPACES_ENDPOINT as string;
+const DO_SPACES_BUCKET = process.env.DO_SPACES_BUCKET as string;
+const DO_SPACES_PUBLIC_URL = process.env.DO_SPACES_PUBLIC_URL as string;
+
+const s3Client = new S3Client({
+  endpoint: DO_SPACES_ENDPOINT,
+  region: "auto",
+  credentials: {
+    accessKeyId: DO_SPACES_ACCESS_KEY_ID,
+    secretAccessKey: DO_SPACES_SECRET_ACCESS_KEY,
+  },
+});
+
+export async function POST(req: Request) {
+  try {
+    const {
+      tokenName,
+      tokenTicker,
+      tokenDescription,
+      tokenImage,
+      initialMarketCap = 5000,
+      migrationMarketCap = 75000,
+      userWallet,
+    } = await req.json();
+
+    if (!tokenName || !tokenTicker || !userWallet) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Missing required fields: tokenName, tokenTicker, userWallet",
+        },
+        { status: 400 }
+      );
+    }
+
+    const connection = new Connection(RPC_URL, "confirmed");
+    const userPublicKey = new PublicKey(userWallet);
+
+    let metadataUrl = "";
+    let imageUrl = "";
+
+    const timestamp = Date.now();
+    const sanitizedTokenName = tokenName
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "-");
+    const dynamicName = `${timestamp}-${sanitizedTokenName}`;
+
+    if (tokenImage) {
+      const uploadedImageUrl = await uploadTokenImage(tokenImage, dynamicName);
+      if (!uploadedImageUrl) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Failed to upload token image",
+          },
+          { status: 400 }
+        );
+      }
+      imageUrl = uploadedImageUrl;
+    }
+
+    if (tokenName || tokenTicker || tokenDescription || imageUrl) {
+      const uploadedMetadataUrl = await uploadTokenMetadata({
+        tokenName,
+        tokenTicker,
+        tokenDescription,
+        imageUrl,
+        mint: dynamicName,
+      });
+      if (!uploadedMetadataUrl) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Failed to upload token metadata",
+          },
+          { status: 400 }
+        );
+      }
+      metadataUrl = uploadedMetadataUrl;
+    }
+
+    const dbcClient = new DynamicBondingCurveClient(connection, "confirmed");
+
+    const { Keypair } = await import("@solana/web3.js");
+    const generatedKeypair = Keypair.generate();
+    const mintPublicKey = generatedKeypair.publicKey;
+
+    const poolTx = await dbcClient.pool.createPool({
+      config: new PublicKey(POOL_CONFIG_KEY as string),
+      baseMint: mintPublicKey,
+      name: tokenName,
+      symbol: tokenTicker,
+      uri: imageUrl || "",
+      payer: userPublicKey,
+      poolCreator: userPublicKey,
+    });
+
+    const { blockhash } = await connection.getLatestBlockhash();
+    poolTx.feePayer = userPublicKey;
+    poolTx.recentBlockhash = blockhash;
+
+    poolTx.sign(generatedKeypair);
+
+    const tokenMint = mintPublicKey.toString();
+
+    let poolAddress = "";
+    try {
+      const accountKeys = poolTx.instructions.flatMap((ix) => ix.keys || []);
+      const newAccounts = accountKeys.filter((key: any) => {
+        return key && typeof key.pubkey === "object" && key.isSigner === false;
+      });
+
+      if (newAccounts.length >= 1) {
+        poolAddress = newAccounts[0]?.pubkey?.toString() || "TBD";
+      } else {
+        poolAddress = "TBD";
+      }
+    } catch (error) {
+      poolAddress = "TBD";
+    }
+
+    const response = {
+      success: true,
+      tokenMint: tokenMint,
+      poolAddress: poolAddress,
+      poolTx: poolTx
+        .serialize({
+          requireAllSignatures: false,
+          verifySignatures: false,
+        })
+        .toString("base64"),
+      metadataUrl,
+      imageUrl,
+      message: `✅DBC token launch ready! ${tokenName} (${tokenTicker}) will start with $${initialMarketCap.toLocaleString()} market cap and migrate at $${migrationMarketCap.toLocaleString()}. DBC will create the token mint automatically.`,
+    };
+
+    return NextResponse.json(response);
+  } catch (error) {
+    console.log("Upload error:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+async function uploadTokenImage(
+  base64Image: string,
+  mint: string
+): Promise<string | false> {
+  try {
+    const matches = base64Image.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return false;
+    }
+
+    const [, contentType, base64Data] = matches;
+    if (!contentType || !base64Data) {
+      return false;
+    }
+
+    const fileBuffer = Buffer.from(base64Data, "base64");
+    const fileName = `tokens/${mint}.${contentType.split("/")[1]}`;
+
+    await uploadToSpaces(fileBuffer, contentType, fileName);
+    return `${DO_SPACES_PUBLIC_URL}/${fileName}`;
+  } catch (error) {
+    return false;
+  }
+}
+
+async function uploadTokenMetadata(params: {
+  tokenName: string;
+  tokenTicker: string;
+  tokenDescription?: string;
+  imageUrl?: string;
+  mint: string;
+}): Promise<string | false> {
+  try {
+    const metadata = {
+      name: params.tokenName,
+      symbol: params.tokenTicker,
+      description: params.tokenDescription || "",
+      image: params.imageUrl || "",
+      attributes: [
+        {
+          trait_type: "Type",
+          value: "DBC Token",
+        },
+        {
+          trait_type: "Launchpad",
+          value: "Meteora DBC",
+        },
+      ],
+    };
+
+    const fileName = `metadata/${params.mint}.json`;
+    await uploadToSpaces(
+      Buffer.from(JSON.stringify(metadata, null, 2)),
+      "application/json",
+      fileName
+    );
+    return `${DO_SPACES_PUBLIC_URL}/${fileName}`;
+  } catch (error) {
+    return false;
+  }
+}
+
+async function uploadToSpaces(
+  fileBuffer: Buffer,
+  contentType: string,
+  fileName: string
+) {
+  return new Promise((resolve, reject) => {
+    const command = new PutObjectCommand({
+      Bucket: DO_SPACES_BUCKET!,
+      Key: fileName,
+      Body: fileBuffer,
+      ContentType: contentType,
+      ACL: "public-read",
+    });
+
+    s3Client
+      .send(command)
+      .then((data) => resolve(data))
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}

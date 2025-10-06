@@ -1,0 +1,56 @@
+"use client";
+
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+interface SocialLinks {
+  twitter: string;
+  telegram: string;
+  website: string;
+}
+
+interface SocialLinksInputProps {
+  value: SocialLinks;
+  onChange: (value: SocialLinks) => void;
+}
+
+export function SocialLinksInput({ value, onChange }: SocialLinksInputProps) {
+  const handleChange = (field: keyof SocialLinks, newValue: string) => {
+    onChange({ ...value, [field]: newValue });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="twitter">Twitter / X</Label>
+        <Input
+          id="twitter"
+          type="url"
+          placeholder="https://twitter.com/yourtoken"
+          value={value.twitter}
+          onChange={(e) => handleChange("twitter", e.target.value)}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="telegram">Telegram</Label>
+        <Input
+          id="telegram"
+          type="url"
+          placeholder="https://t.me/yourtoken"
+          value={value.telegram}
+          onChange={(e) => handleChange("telegram", e.target.value)}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="website">Website</Label>
+        <Input
+          id="website"
+          type="url"
+          placeholder="https://yourtoken.com"
+          value={value.website}
+          onChange={(e) => handleChange("website", e.target.value)}
+        />
+      </div>
+    </div>
+  );
+}
