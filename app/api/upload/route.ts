@@ -101,7 +101,7 @@ export async function POST(req: Request) {
       baseMint: mintPublicKey,
       name: tokenName,
       symbol: tokenTicker,
-      uri: imageUrl || "",
+      uri: metadataUrl|| "",
       payer: userPublicKey,
       poolCreator: userPublicKey,
     });
@@ -198,14 +198,15 @@ async function uploadTokenMetadata(params: {
       image: params.imageUrl || "",
       attributes: [
         {
-          trait_type: "Type",
-          value: "DBC Token",
+          trait_type: "Platform",
+          value: "Onlyfounders",
         },
         {
-          trait_type: "Launchpad",
-          value: "Meteora DBC",
+          trait_type: "DEX",
+          value: "Onlyfounders.fu",
         },
       ],
+      "tags" : ["OnlyFounders.fun", "MEME", "#ONLY"],
     };
 
     const fileName = `metadata/${params.mint}.json`;
