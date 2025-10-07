@@ -29,16 +29,10 @@ export function SwapSection({ tokenId }: SwapSectionProps) {
   const [buyAmount, setBuyAmount] = useState("");
   const [sellAmount, setSellAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [estimatedOutput, setEstimatedOutput] = useState("");
-  const [estimatedInput, setEstimatedInput] = useState("");
 
-  // Hardcoded token and pool addresses
-  const TOKEN_MINT = new PublicKey(
-    "9rRUKEwp7GSZ5hwB9eZJHjJxgWAsCS6NhxJN6BKSupjs"
-  );
   const POOL_ADDRESS = new PublicKey(
-    "4sShgjDkQT5zsakYHrFXCHoCs2fK3ERYwYnAaHcS8rDX"
-  ); // Using token address as pool address
+    "4sShgjDkQT5zsakYHrFXCHoCs2fK3ERYwYnAaHcS8rDX" // token pool address
+  ); 
 
   const TOKEN_SYMBOL = "TOKEN";
   const SOL_BALANCE = 10.5;
@@ -124,7 +118,6 @@ export function SwapSection({ tokenId }: SwapSectionProps) {
       toast.loading("Creating swap transaction...", { id: toastId });
       const swapTransaction = await client.pool.swap(swapParam);
 
-      // Set recent blockhash and fee payer before signing
       const { blockhash } = await connection.getLatestBlockhash();
       swapTransaction.recentBlockhash = blockhash;
       swapTransaction.feePayer = wallet.publicKey;
@@ -205,7 +198,6 @@ export function SwapSection({ tokenId }: SwapSectionProps) {
       toast.loading("Creating swap transaction...", { id: toastId });
       const swapTransaction = await client.pool.swap(swapParam);
 
-      // Set recent blockhash and fee payer before signing
       const { blockhash } = await connection.getLatestBlockhash();
       swapTransaction.recentBlockhash = blockhash;
       swapTransaction.feePayer = wallet.publicKey;

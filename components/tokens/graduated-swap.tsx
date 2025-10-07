@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Connection, PublicKey } from "@solana/web3.js";
+import { Connection, PublicKey, SendTransactionError } from "@solana/web3.js";
 import { CpAmm } from "@meteora-ag/cp-amm-sdk";
 import BN from "bn.js";
 import { toast } from "sonner";
@@ -12,7 +12,7 @@ import {
   deriveDammV2PoolAddress,
   DynamicBondingCurveClient,
 } from "@meteora-ag/dynamic-bonding-curve-sdk";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, getAccount } from "@solana/spl-token";
 
 export default function GraduatedSwap() {
   const connection = new Connection(
@@ -20,11 +20,12 @@ export default function GraduatedSwap() {
     "confirmed"
   );
 
-  const TOKEN_MINT = new PublicKey(
-    "HW5grQGzm8ZuEUCjTPDoTPBHw69MxTVKUceWJfdQqu31"
+  const NON_GRADUATED_POOL_ADDRESS = new PublicKey(
+    "4sShgjDkQT5zsakYHrFXCHoCs2fK3ERYwYnAaHcS8rDX" // token pool address
   );
+
   const POOL_ADDRESS = new PublicKey(
-    "3mxFgR7HypBMu83WVmKmZzhWF4XssTVfP6wAgyvancwj"
+    "3mxFgR7HypBMu83WVmKmZzhWF4XssTVfP6wAgyvancwj" // get from graduated pool state other button
   );
   const cpAmm = new CpAmm(connection);
   const wallet = useWallet();
@@ -165,15 +166,16 @@ export default function GraduatedSwap() {
     }
   }
 
+  const client = new DynamicBondingCurveClient(connection, "confirmed");
+
   async function handlePoolState() {
     try {
-      const client = new DynamicBondingCurveClient(connection, "confirmed");
-      const poolState = await client.state.getPool(POOL_ADDRESS);
+      const poolState = await client.state.getPool(NON_GRADUATED_POOL_ADDRESS);
       if (!poolState) {
         console.error("Pool doesn't exist yet!");
       }
 
-      const virtualPoolState = await client.state.getPool(POOL_ADDRESS);
+      const virtualPoolState = await client.state.getPool(NON_GRADUATED_POOL_ADDRESS);
       if (!virtualPoolState) {
         throw new Error("Pool not found");
       }
@@ -183,8 +185,8 @@ export default function GraduatedSwap() {
       );
       const dammV2PoolAddress = deriveDammV2PoolAddress(
         DAMM_V2_MIGRATION_FEE_ADDRESS[poolConfigState.migrationFeeOption],
-        new PublicKey("HW5grQGzm8ZuEUCjTPDoTPBHw69MxTVKUceWJfdQqu31"),
-        new PublicKey("So11111111111111111111111111111111111111112")
+        new PublicKey("HW5grQGzm8ZuEUCjTPDoTPBHw69MxTVKUceWJfdQqu31"), // token mint
+        new PublicKey("So11111111111111111111111111111111111111112") // token program
       );
       console.log("Damm V2 Pool Address:", dammV2PoolAddress.toString());
       const dammV2PoolState = await client.state.getPool(dammV2PoolAddress);

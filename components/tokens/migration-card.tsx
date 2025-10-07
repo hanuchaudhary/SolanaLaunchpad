@@ -186,21 +186,18 @@ export function MigrationCard({
 
       console.log("Signing migration transaction with NFT keypairs...");
 
-      // Sign with the NFT keypairs first
       migrateTx.transaction.sign(
         migrateTx.firstPositionNftKeypair,
         migrateTx.secondPositionNftKeypair
       );
       console.log("NFT keypairs signed successfully");
 
-      // Then sign with the wallet (this will add the wallet's signature)
       console.log("Requesting wallet signature...");
       const signedMigrateTx = await wallet.signTransaction(
         migrateTx.transaction
       );
       console.log("Wallet signed successfully");
 
-      // Send the fully signed transaction
       console.log("Submitting migration transaction...");
       const migrateSignature = await connection.sendRawTransaction(
         signedMigrateTx.serialize(),
@@ -235,9 +232,9 @@ export function MigrationCard({
         description: `Your token has been migrated to DAMM V2`,
         duration: 10000,
         action: {
-          label: "View on Solscan",
+          label: "View on Explorer",
           onClick: () =>
-            window.open(`https://solscan.io/tx/${migrateSignature}`, "_blank"),
+            window.open(`https://explorer.solana.com/tx/${migrateSignature}?cluster=devnet`, "_blank"),
         },
       });
     } catch (error) {
