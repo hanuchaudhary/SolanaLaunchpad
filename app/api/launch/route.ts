@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     const txSignature = await sendAndConfirmRawTransaction(connection, raw, {
       commitment: "confirmed",
     });
-
+    
     let poolData: any = null;
     if (mint && userWallet) {
       try {

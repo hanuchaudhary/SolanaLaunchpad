@@ -91,6 +91,8 @@ export function TokenCreationForm({
     e.preventDefault();
     setIsSubmitting(true);
 
+    toast.loading("Creating token...", { duration: 2000 });
+
     try {
       const response = await axios.post("/api/upload", {
         tokenName: formData.name,
@@ -124,6 +126,7 @@ export function TokenCreationForm({
         const { blockhash } = await connection.getLatestBlockhash("confirmed");
         transaction.recentBlockhash = blockhash;
       }
+      
       toast.info("Please approve the transaction in your wallet", {
         description:
           "You will be prompted to sign the transaction for creating the DBC pool",
@@ -163,11 +166,11 @@ export function TokenCreationForm({
         tokenSymbol: formData.symbol,
       };
 
+      toast.success("Transaction confirmed", { duration: 5000 });
       toast.success("Woohu! Token created successfully");
 
       setSuccessData(tokenData);
       setShowSuccessDialog(true);
-      
       setFormData(initialFormData);
     } catch (error: any) {
       toast.error(
@@ -175,6 +178,7 @@ export function TokenCreationForm({
           (error instanceof Error ? error.message : "Unknown error")
       );
     } finally {
+      toast.dismiss();
       setIsSubmitting(false);
     }
   };

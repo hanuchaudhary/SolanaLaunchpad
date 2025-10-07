@@ -28,9 +28,9 @@ export function TokenDetails({ tokenId }: TokenDetailsProps) {
     holders: "1,234",
     totalSupply: "1,000,000,000",
     contractAddress: "0x1234...5678",
-    creator: "0xabcd...efgh",
-    poolAddress: "PoolAddressHere111111111111111111111111111",
-    configAddress: "ConfigAddressHere111111111111111111111111",
+    creator: "0xABCD...EFGH",
+    poolAddress: "4sShgjDkQT5zsakYHrFXCHoCs2fK3ERYwYnAaHcS8rDX",
+    configAddress: "CUdxMBkGwYVJHmxBHpJcv2PLoYEULcVKFQGbiS8fahew",
     socialLinks: {
       twitter: "https://twitter.com/dogemoon",
       telegram: "https://t.me/dogemoon",

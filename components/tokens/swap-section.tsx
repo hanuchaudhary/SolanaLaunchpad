@@ -37,7 +37,7 @@ export function SwapSection({ tokenId }: SwapSectionProps) {
     "9rRUKEwp7GSZ5hwB9eZJHjJxgWAsCS6NhxJN6BKSupjs"
   );
   const POOL_ADDRESS = new PublicKey(
-    "xT17qA8Dwnky6t2DyKCDAgX5phvM2v3WPtV5yWBiSB3"
+    "4sShgjDkQT5zsakYHrFXCHoCs2fK3ERYwYnAaHcS8rDX"
   ); // Using token address as pool address
 
   const TOKEN_SYMBOL = "TOKEN";
@@ -56,9 +56,9 @@ export function SwapSection({ tokenId }: SwapSectionProps) {
     try {
       const client = new DynamicBondingCurveClient(connection, "confirmed");
       const poolState = await client.state.getPool(POOL_ADDRESS);
-if (!poolState) {
-  console.error("Pool doesn't exist yet!");
-}
+      if (!poolState) {
+        console.error("Pool doesn't exist yet!");
+      }
 
       const virtualPoolState = await client.state.getPool(POOL_ADDRESS);
       if (!virtualPoolState) {
@@ -71,7 +71,7 @@ if (!poolState) {
 
       const currentPoint = new BN(0);
 
-      const amountIn = new BN(Math.floor(amountInSol * 1e9)); 
+      const amountIn = new BN(Math.floor(amountInSol * 1e9));
 
       const quote = await client.pool.swapQuote({
         virtualPool: virtualPoolState,
@@ -148,7 +148,7 @@ if (!poolState) {
         <div className="flex flex-col gap-1">
           <p>Swap successful!</p>
           <a
-            href={`https://explorer.solana.com/address/${signature}?cluster=devnet`}
+            href={`https://explorer.solana.com/tx/${signature}?cluster=devnet`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs underline"

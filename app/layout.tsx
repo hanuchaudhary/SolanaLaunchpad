@@ -27,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning suppressContentEditableWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -40,7 +40,7 @@ export default function RootLayout({
           >
             <Navbar />
             <main>{children}</main>
-            <Toaster position="top-center" toastOptions={{
+            <Toaster position="top-left" toastOptions={{
               style:{
                 borderRadius: '24px',
                 border: '0px',

@@ -94,7 +94,9 @@ export function MigrationCard({
       setMigrationStep("Checking migration metadata...");
       const migrationMetadata =
         deriveDammV2MigrationMetadataAddress(poolPubkey);
-      const metadataAccount = await connection.getAccountInfo(migrationMetadata);
+      const metadataAccount = await connection.getAccountInfo(
+        migrationMetadata
+      );
 
       if (!metadataAccount) {
         toast.info("Creating migration metadata...", {
@@ -174,23 +176,57 @@ export function MigrationCard({
           DAMM_V2_MIGRATION_FEE_ADDRESS[poolConfigState.migrationFeeOption],
       });
 
-      const { blockhash: migrateBlockhash } =
+      const { blockhash: migrateBlockhash, lastValidBlockHeight } =
         await connection.getLatestBlockhash("confirmed");
+      console.log("Migration transaction:", migrateTx);
+
       migrateTx.transaction.recentBlockhash = migrateBlockhash;
+      migrateTx.transaction.lastValidBlockHeight = lastValidBlockHeight;
       migrateTx.transaction.feePayer = wallet.publicKey;
 
-      migrateTx.transaction.partialSign(migrateTx.firstPositionNftKeypair);
-      migrateTx.transaction.partialSign(migrateTx.secondPositionNftKeypair);
+      console.log("Signing migration transaction with NFT keypairs...");
 
+      // Sign with the NFT keypairs first
+      migrateTx.transaction.sign(
+        migrateTx.firstPositionNftKeypair,
+        migrateTx.secondPositionNftKeypair
+      );
+      console.log("NFT keypairs signed successfully");
+
+      // Then sign with the wallet (this will add the wallet's signature)
+      console.log("Requesting wallet signature...");
       const signedMigrateTx = await wallet.signTransaction(
         migrateTx.transaction
       );
+      console.log("Wallet signed successfully");
 
+      // Send the fully signed transaction
+      console.log("Submitting migration transaction...");
       const migrateSignature = await connection.sendRawTransaction(
-        signedMigrateTx.serialize()
+        signedMigrateTx.serialize(),
+        {
+          skipPreflight: false,
+          preflightCommitment: "confirmed",
+        }
       );
 
-      await connection.confirmTransaction(migrateSignature, "confirmed");
+      toast.success("Migration transaction submitted!", {
+        description: `Transaction: ${migrateSignature.slice(0, 8)}...`,
+      });
+
+      console.log("Confirming transaction...");
+      const confirmation = await connection.confirmTransaction(
+        {
+          signature: migrateSignature,
+          blockhash: migrateBlockhash,
+          lastValidBlockHeight: lastValidBlockHeight,
+        },
+        "confirmed"
+      );
+
+      if (confirmation.value.err) {
+        throw new Error("Transaction confirmation failed");
+      }
 
       setMigrationComplete(true);
       setMigrationStep("Migration complete!");
@@ -201,13 +237,11 @@ export function MigrationCard({
         action: {
           label: "View on Solscan",
           onClick: () =>
-            window.open(
-              `https://solscan.io/tx/${migrateSignature}`,
-              "_blank"
-            ),
+            window.open(`https://solscan.io/tx/${migrateSignature}`, "_blank"),
         },
       });
     } catch (error) {
+      console.log("Migration error:", error);
       toast.error("Migration failed", {
         description:
           error instanceof Error ? error.message : "Unknown error occurred",
