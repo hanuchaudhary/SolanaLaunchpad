@@ -69,6 +69,8 @@ export function SwapSection({ tokenId }: SwapSectionProps) {
         virtualPoolState.config
       );
 
+
+
       const currentPoint = new BN(0);
 
       const amountIn = new BN(Math.floor(amountInSol * 1e9));
