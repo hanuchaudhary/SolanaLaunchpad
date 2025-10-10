@@ -100,12 +100,12 @@ export type TokenCardItem = {
   volume: string;
   progress: number;
   createdAt: string;
+  publicKey: string | { toString(): string };
+  poolKey: string | { toString(): string };
+  quoteMint: string | { toString(): string };
+  tokenReserve: string;
+  quoteReserve: string;
   tokenMint?: string | { toString(): string };
-  publicKey?: string | { toString(): string };
-  poolKey?: string | { toString(): string };
-  quoteMint?: string | { toString(): string };
-  tokenReserve?: string | { toString(): string };
-  quoteReserve?: string | { toString(): string };
 };
 
 export async function fetchAllTokens(): Promise<TokenCardItem[]> {
