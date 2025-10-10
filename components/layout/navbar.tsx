@@ -19,7 +19,6 @@ export function Navbar() {
   const { connected, publicKey, connect, disconnect, connecting, wallet } =
     useWallet();
   const { setVisible } = useWalletModal();
-
   useEffect(() => {
     const fetchWalletAddress = async () => {
       let addressStr: string | undefined;
