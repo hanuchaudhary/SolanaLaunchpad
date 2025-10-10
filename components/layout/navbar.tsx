@@ -126,10 +126,10 @@ export function Navbar() {
   return (
     <>
       <header className="">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <Link href="/tokens" className="flex items-center gap-2">
-              <div className="text-2xl font-bold">TokunLunchpad</div>
+              <div className="text-sm font-medium">Tokun.Lunchpad</div>
             </Link>
             <nav className="flex items-center gap-6">
               <Link

@@ -8,6 +8,8 @@ import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { MigrationCard } from "./migration-card";
+import axios from "axios";
+import React from "react";
 
 interface TokenDetailsProps {
   tokenId: string;
@@ -37,6 +39,15 @@ export function TokenDetails({ tokenId }: TokenDetailsProps) {
       website: "https://dogemoon.io",
     },
   };
+
+  const fetchTokenData = async () => {
+    const res = await axios.get(`/api/tokens/${tokenId}`);
+    console.log("TokenDetailPage params:", res.data);
+  };
+
+  React.useEffect(() => {
+    fetchTokenData();
+  }, [tokenId]);
 
   return (
     <div className="space-y-6">

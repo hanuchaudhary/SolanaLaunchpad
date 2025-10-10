@@ -1,6 +1,8 @@
 "use client";
 
+import React from "react";
 import { TokenCard } from "./token-card";
+import axios from "axios";
 
 const mockTokens = [
   {
@@ -66,10 +68,21 @@ const mockTokens = [
 ];
 
 export function TokenGrid() {
+  const [tokens, setTokens] = React.useState<any[]>([]);
+
+  const getPools = async () => {
+    const response = await axios.get("/api/tokens");
+    setTokens(response.data.pools);
+  };
+
+  React.useEffect(() => {
+    getPools();
+  }, []);
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {mockTokens.map((token) => (
-        <TokenCard key={token.id} {...token} />
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {tokens.map((token) => (
+        <TokenCard key={token.id} token={token} />
       ))}
     </div>
   );

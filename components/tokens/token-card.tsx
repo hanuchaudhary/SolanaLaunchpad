@@ -5,48 +5,47 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
 interface TokenCardProps {
-  id: string;
-  name: string;
-  symbol: string;
-  description: string;
-  image: string;
-  marketCap: string;
-  volume: string;
-  progress: number;
+  token: any; // Pool data from Meteora SDK
 }
 
-export function TokenCard({
-  id,
-  name,
-  symbol,
-  description,
-  image,
-  marketCap,
-  volume,
-  progress,
-}: TokenCardProps) {
+export function TokenCard({ token }: TokenCardProps) {
+  const poolKey =
+    token.publicKey?.toString() || token.poolKey?.toString() || "unknown";
+  const tokenMint = token.tokenMint?.toString() || "N/A";
+  const quoteMint = token.quoteMint?.toString() || "N/A";
+
+  const formatAddress = (address: string) => {
+    if (address.length < 8) return address;
+    return `${address.slice(0, 4)}...${address.slice(-4)}`;
+  };
+  const progress = token.progress || 0;
+  const tokenReserve = token.tokenReserve?.toString() || "0";
+  const quoteReserve = token.quoteReserve?.toString() || "0";
+
   return (
-    <Link href={`/tokens/${id}`}>
+    <Link href={`/tokens/${poolKey}`}>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
         <CardHeader className="pb-4">
           <div className="flex items-start gap-4">
             <div className="relative w-16 h-16 flex-shrink-0">
               <Image
-                src={image}
-                alt={name}
+                src={token.image || "/globe.svg"}
+                alt={token.name || "Token"}
                 fill
                 className="rounded-full object-cover"
               />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-bold text-lg truncate">{name}</h3>
+                <h3 className="font-bold text-lg truncate">
+                  {token.name || formatAddress(tokenMint)}
+                </h3>
                 <Badge variant="secondary" className="text-xs">
-                  {symbol}
+                  {token.symbol || "TKN"}
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground line-clamp-2">
-                {description}
+                {token.description || `Pool: ${formatAddress(poolKey)}`}
               </p>
             </div>
           </div>
@@ -54,12 +53,34 @@ export function TokenCard({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-muted-foreground mb-1">Market Cap</p>
-              <p className="font-semibold">{marketCap}</p>
+              <p className="text-xs text-muted-foreground mb-1">Token Mint</p>
+              <p className="font-semibold text-xs font-mono">
+                {formatAddress(tokenMint)}
+              </p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-1">Volume 24h</p>
-              <p className="font-semibold">{volume}</p>
+              <p className="text-xs text-muted-foreground mb-1">Quote Mint</p>
+              <p className="font-semibold text-xs font-mono">
+                {formatAddress(quoteMint)}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">
+                Token Reserve
+              </p>
+              <p className="font-semibold text-xs">
+                {(Number(tokenReserve) / 1e9).toFixed(2)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">
+                Quote Reserve
+              </p>
+              <p className="font-semibold text-xs">
+                {(Number(quoteReserve) / 1e9).toFixed(2)}
+              </p>
             </div>
           </div>
           <div className="space-y-2">
