@@ -153,7 +153,7 @@ export function Navbar() {
                 <ThemeToggle />
               </div>
               <Button
-                className="bg-primary rounded-none py-10"
+                className="bg-primary border-none rounded-none py-10"
                 onClick={connecting ? undefined : handleWalletClick}
                 disabled={connecting}
               >

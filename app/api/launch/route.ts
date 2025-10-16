@@ -6,10 +6,11 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import { DynamicBondingCurveClient } from "@meteora-ag/dynamic-bonding-curve-sdk";
+import { markVanityPairAsUsed } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
-    const { signedTransaction, mint, userWallet } = await req.json();
+    const { signedTransaction, mint, userWallet, vid } = await req.json();
 
     if (!signedTransaction) {
       return NextResponse.json(
@@ -36,9 +37,9 @@ export async function POST(req: Request) {
       skipPreflight: true,
       maxRetries: 5,
     });
-    
+
     await connection.confirmTransaction(txSignature, "confirmed");
-    
+
     let poolData: any = null;
     if (mint && userWallet) {
       try {
@@ -157,10 +158,15 @@ export async function POST(req: Request) {
       }
     }
 
+    if (vid) {
+      await markVanityPairAsUsed(vid);
+      console.log("Marked vanity pair as used for vid:", vid);
+    }
+
     return NextResponse.json({
       success: true,
       signature: txSignature,
-      poolAddress: poolData.poolAddress,
+      poolAddress: poolData?.poolAddress || null,
     });
   } catch (error) {
     console.error("Transaction error:", error);

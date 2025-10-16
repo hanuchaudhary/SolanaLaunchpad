@@ -239,7 +239,7 @@
   font-family: var(--font-mono);
   font-weight: 500;
   padding: 0.5rem 1rem;
-  border-radius: var(--radius);
+  border-radius: "20px";
   box-shadow: var(--shadow-sm);
   transition: background-color 0.2s, box-shadow 0.2s;
 }

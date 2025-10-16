@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "./image-upload";
 import { SocialLinksInput } from "./social-links-input";
@@ -96,6 +95,7 @@ export function TokenCreationForm({
         poolTx,
         tokenMint,
         poolAddress: responsePoolAddress,
+        vid,
       } = response.data;
       const transaction = Transaction.from(Buffer.from(poolTx, "base64"));
       if (!transaction.feePayer) {
@@ -122,6 +122,7 @@ export function TokenCreationForm({
       const finalResponse = await axios.post("/api/launch", {
         signedTransaction: signedBase64,
         mint: tokenMint,
+        vid,
         userWallet: wallet.publicKey?.toString(),
       });
       const { signature, poolAddress } = finalResponse.data;
@@ -227,25 +228,28 @@ export function TokenCreationForm({
                   />
                 </div>
                 <div className="flex">
-
                   <Button
                     type="submit"
                     size="lg"
                     className="flex-1 border-none rounded-none py-12"
                     disabled={isSubmitting || !wallet.connected}
                   >
-                    {!wallet.connected ? "Connect Wallet" : isSubmitting ? "Creating Token..." : "Create Token"}
+                    {!wallet.connected
+                      ? "Connect Wallet"
+                      : isSubmitting
+                      ? "Creating Token..."
+                      : "Create Token"}
                   </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="border-none px-12 rounded-none py-12"
-                      size="lg"
-                      onClick={resetForm}
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? "Cancel" : "Reset"}
-                    </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-none px-12 rounded-none py-12"
+                    size="lg"
+                    onClick={resetForm}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Cancel" : "Reset"}
+                  </Button>
                 </div>
               </div>
             </div>

@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
-import { Connection, PublicKey } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { DynamicBondingCurveClient, deriveDbcPoolAddress } from "@meteora-ag/dynamic-bonding-curve-sdk";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getVanityPair } from "@/lib/db";
+import bs58 from "bs58";
 
 const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL as string;
 const POOL_CONFIG_KEY = process.env.POOL_CONFIG_KEY;
@@ -93,10 +95,22 @@ export async function POST(req: Request) {
 
     const dbcClient = new DynamicBondingCurveClient(connection, "confirmed");
 
-    const { Keypair } = await import("@solana/web3.js");
-    const generatedKeypair = Keypair.generate();
-    const mintPublicKey = generatedKeypair.publicKey;
+    const vanityKeypair = await getVanityPair();
+    if (!vanityKeypair) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No available vanity keypairs. Please try again later.",
+        },
+        { status: 500 }
+      );
+    }
 
+    const secretKey = bs58.decode(vanityKeypair.secret_key_base58);
+    const generatedKeypair = Keypair.fromSecretKey(secretKey);
+    const mintPublicKey = generatedKeypair.publicKey;
+    console.log("Using vanity mint address:", mintPublicKey.toString());
+    
     const poolTx = await dbcClient.pool.createPool({
       config: new PublicKey(POOL_CONFIG_KEY as string),
       baseMint: mintPublicKey,
@@ -124,6 +138,7 @@ export async function POST(req: Request) {
     console.log("Derived pool address:", poolAddress);
 
     const response = {
+      vid: vanityKeypair.id,
       success: true,
       tokenMint: tokenMint,
       poolAddress: poolAddress,

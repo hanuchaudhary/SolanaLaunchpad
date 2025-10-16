@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,14 +22,61 @@ export function SwapSection({ tokenId }: SwapSectionProps) {
   console.log("SwapSection");
   const [buyAmount, setBuyAmount] = useState("");
   const [sellAmount, setSellAmount] = useState("");
+  const [buyOutputAmount, setBuyOutputAmount] = useState("");
+  const [sellOutputAmount, setSellOutputAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingQuote, setIsFetchingQuote] = useState(false);
+  const [SOLPrice, setSOLPrice] = useState<number | null>(null);
+  const [tokenPriceUSD, setTokenPriceUSD] = useState<string | null>(null);
+  const [isFetchingPrice, setIsFetchingPrice] = useState(false);
+
+  const buyDebounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const sellDebounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const priceRefetchTimer = useRef<NodeJS.Timeout | null>(null);
 
   const POOL_ADDRESS = TOKEN_POOL_ADDRESS;
 
+  const fetchPrices = useCallback(async () => {
+    setIsFetchingPrice(true);
+    try {
+      const response = await fetch("https://gated.chat/price/sol");
+      const solPriceData = await response.json();
+      setSOLPrice(solPriceData);
+
+      try {
+        const { outputAmount } = await getSwapQuote(1, true);
+        const pricePerToken = solPriceData * outputAmount;
+        setTokenPriceUSD(pricePerToken.toFixed(6));
+      } catch (error) {
+        console.error("Failed to fetch token quote:", error);
+        setTokenPriceUSD(null);
+      }
+    } catch (error) {
+      console.error("Failed to fetch SOL price:", error);
+      setSOLPrice(null);
+      setTokenPriceUSD(null);
+    } finally {
+      setIsFetchingPrice(false);
+    }
+  }, [POOL_ADDRESS]);
+
+  useEffect(() => {
+    fetchPrices();
+
+    priceRefetchTimer.current = setInterval(() => {
+      fetchPrices();
+    }, 30000);
+
+    return () => {
+      if (priceRefetchTimer.current) {
+        clearInterval(priceRefetchTimer.current);
+      }
+    };
+  }, [fetchPrices]);
+
   const TOKEN_SYMBOL = "TOKEN";
   const SOL_BALANCE = 10.5;
-  const PRICE_PER_TOKEN = 0.0012;
-  const SLIPPAGE_BPS = 100; // 1%
+  const SLIPPAGE_BPS = 100;
 
   const wallet = useWallet();
   const connection = new Connection(
@@ -64,12 +111,101 @@ export function SwapSection({ tokenId }: SwapSectionProps) {
         currentPoint,
       });
 
-      return quote;
+      console.log("Swap quote:", quote);
+      const outputAmount =
+        new BN(quote.outputAmount).toNumber() / Math.pow(10, isBuy ? 6 : 9);
+      console.log("Out :", outputAmount);
+
+      return { quote, outputAmount };
     } catch (error) {
       console.error("Failed to get swap quote:", error);
       throw error;
     }
   };
+
+  const fetchBuyQuote = useCallback(
+    async (amount: string) => {
+      if (!amount || parseFloat(amount) <= 0) {
+        setBuyOutputAmount("");
+        return;
+      }
+      setIsFetchingQuote(true);
+      try {
+        const { outputAmount } = await getSwapQuote(parseFloat(amount), true);
+        setBuyOutputAmount(outputAmount.toFixed(6));
+      } catch (error) {
+        console.error("Failed to fetch buy quote:", error);
+        setBuyOutputAmount("");
+      } finally {
+        setIsFetchingQuote(false);
+      }
+    },
+    [POOL_ADDRESS, SLIPPAGE_BPS]
+  );
+
+  const fetchSellQuote = useCallback(
+    async (amount: string) => {
+      if (!amount || parseFloat(amount) <= 0) {
+        setSellOutputAmount("");
+        return;
+      }
+
+      setIsFetchingQuote(true);
+      try {
+        const { outputAmount } = await getSwapQuote(parseFloat(amount), false);
+        setSellOutputAmount(outputAmount.toFixed(9));
+      } catch (error) {
+        console.error("Failed to fetch sell quote:", error);
+        setSellOutputAmount("");
+      } finally {
+        setIsFetchingQuote(false);
+      }
+    },
+    [POOL_ADDRESS, SLIPPAGE_BPS]
+  );
+
+  const handleBuyAmountChange = (value: string) => {
+    setBuyAmount(value);
+
+    if (buyDebounceTimer.current) {
+      clearTimeout(buyDebounceTimer.current);
+    }
+
+    if (value && parseFloat(value) > 0) {
+      buyDebounceTimer.current = setTimeout(() => {
+        fetchBuyQuote(value);
+      }, 500);
+    } else {
+      setBuyOutputAmount("");
+    }
+  };
+
+  const handleSellAmountChange = (value: string) => {
+    setSellAmount(value);
+
+    if (sellDebounceTimer.current) {
+      clearTimeout(sellDebounceTimer.current);
+    }
+
+    if (value && parseFloat(value) > 0) {
+      sellDebounceTimer.current = setTimeout(() => {
+        fetchSellQuote(value);
+      }, 500);
+    } else {
+      setSellOutputAmount("");
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (buyDebounceTimer.current) {
+        clearTimeout(buyDebounceTimer.current);
+      }
+      if (sellDebounceTimer.current) {
+        clearTimeout(sellDebounceTimer.current);
+      }
+    };
+  }, []);
 
   const handleBuy = async () => {
     if (!wallet.connected || !wallet.publicKey) {
@@ -89,7 +225,7 @@ export function SwapSection({ tokenId }: SwapSectionProps) {
       const client = new DynamicBondingCurveClient(connection, "confirmed");
 
       toast.loading("Getting swap quote...", { id: toastId });
-      const quote = await getSwapQuote(parseFloat(buyAmount), true);
+      const { quote } = await getSwapQuote(parseFloat(buyAmount), true);
       console.log("Swap quote:", quote);
       const swapParam = {
         amountIn: new BN(Math.floor(parseFloat(buyAmount) * 1e9)),
@@ -165,7 +301,7 @@ export function SwapSection({ tokenId }: SwapSectionProps) {
     try {
       const client = new DynamicBondingCurveClient(connection, "confirmed");
       toast.loading("Getting swap quote...", { id: toastId });
-      const quote = await getSwapQuote(parseFloat(sellAmount), false);
+      const { quote } = await getSwapQuote(parseFloat(sellAmount), false);
       const swapParam = {
         amountIn: new BN(parseFloat(sellAmount) * 1e6),
         minimumAmountOut: quote.minimumAmountOut,
@@ -239,31 +375,47 @@ export function SwapSection({ tokenId }: SwapSectionProps) {
                 type="number"
                 placeholder="0.0"
                 value={buyAmount}
-                onChange={(e) => setBuyAmount(e.target.value)}
+                onChange={(e) => handleBuyAmountChange(e.target.value)}
               />
               <div className="flex items-center justify-between bg-muted rounded-none top-0 right-0 py-6 px-8 absolute">
                 <span className="text-sm font-medium">SOL</span>
               </div>
-              <span className="text-xs text-muted-foreground text-right w-full">
-                Balance: {SOL_BALANCE}
-              </span>
+              <div className="flex justify-between items-center px-2 mt-1">
+                <span className="text-xs text-muted-foreground">
+                  Balance: {SOL_BALANCE}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {isFetchingPrice
+                    ? "Loading..."
+                    : tokenPriceUSD
+                    ? `$${tokenPriceUSD}`
+                    : "Price: N/A"}
+                </span>
+              </div>
             </div>
 
             <div className="space-y-2 relative">
               <div className="space-y-2">
                 <Input
                   id="buy-to"
-                  type="number"
+                  type="text"
                   placeholder="0.0"
                   className="sm:max-w-md border-0 rounded-none focus-visible:outline-0 focus-visible:ring-0 py-8 sm:text-lg"
                   readOnly
-                  value={
-                    buyAmount ? (parseFloat(buyAmount) * 833.33).toFixed(2) : ""
-                  }
+                  value={isFetchingQuote ? "Loading..." : buyOutputAmount}
                 />
                 <div className="flex items-center justify-between bg-muted rounded-none top-0 right-0 py-6 px-8 absolute">
                   <span className="text-sm font-medium">{TOKEN_SYMBOL}</span>
                 </div>
+                {buyOutputAmount && tokenPriceUSD && (
+                  <span className="text-xs text-muted-foreground px-2">
+                    ≈ $
+                    {(
+                      parseFloat(buyOutputAmount) * parseFloat(tokenPriceUSD)
+                    ).toFixed(2)}{" "}
+                    USD
+                  </span>
+                )}
               </div>
             </div>
 
@@ -293,10 +445,19 @@ export function SwapSection({ tokenId }: SwapSectionProps) {
                 type="number"
                 placeholder="0.0"
                 value={sellAmount}
-                onChange={(e) => setSellAmount(e.target.value)}
+                onChange={(e) => handleSellAmountChange(e.target.value)}
               />
               <div className="flex items-center justify-between bg-muted rounded-none top-0 right-0 py-6 px-8 absolute">
                 <span className="text-sm font-medium">{TOKEN_SYMBOL}</span>
+              </div>
+              <div className="flex justify-end items-center px-2 mt-1">
+                <span className="text-xs text-muted-foreground">
+                  {isFetchingPrice
+                    ? "Loading..."
+                    : tokenPriceUSD
+                    ? `$${tokenPriceUSD}`
+                    : "Price: N/A"}
+                </span>
               </div>
             </div>
 
@@ -304,22 +465,26 @@ export function SwapSection({ tokenId }: SwapSectionProps) {
               <div className="space-y-2">
                 <Input
                   id="sell-to"
-                  type="number"
+                  type="text"
                   placeholder="0.0"
                   className="sm:max-w-md border-0 rounded-none focus-visible:outline-0 focus-visible:ring-0 py-8 sm:text-lg"
                   readOnly
-                  value={
-                    sellAmount
-                      ? (parseFloat(sellAmount) / 833.33).toFixed(4)
-                      : ""
-                  }
+                  value={isFetchingQuote ? "Loading..." : sellOutputAmount}
                 />
                 <div className="flex items-center justify-between bg-muted rounded-none top-0 right-0 py-6 px-8 absolute">
                   <span className="text-sm font-medium">SOL</span>
                 </div>
-                <span className="text-xs text-muted-foreground text-right w-full">
-                  Balance: {SOL_BALANCE}
-                </span>
+                <div className="flex justify-between items-center px-2 mt-1">
+                  <span className="text-xs text-muted-foreground">
+                    Balance: {SOL_BALANCE}
+                  </span>
+                  {sellOutputAmount && SOLPrice && (
+                    <span className="text-xs text-muted-foreground">
+                      ≈ ${(parseFloat(sellOutputAmount) * SOLPrice).toFixed(2)}{" "}
+                      USD
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 

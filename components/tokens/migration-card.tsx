@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -297,7 +303,7 @@ export function MigrationCard({
 
   return (
     <>
-      <Card className="border-0 rounded-none bg-primary/5">
+      <Card className="border-b gap-5.5 border-x-0 p-0 rounded-none pt-5 bg-primary/5">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Rocket className="w-5 h-5 text-primary" />
@@ -316,33 +322,28 @@ export function MigrationCard({
               irreversible and requires multiple transaction approvals.
             </AlertDescription>
           </Alert>
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              onClick={() => setShowDialog(true)}
-              className="w-full"
-              size="lg"
-              disabled={migrationComplete}
-            >
-              {migrationComplete ? (
-                <>
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
-                  Migration Complete
-                </>
-              ) : (
-                <>
-                  <Rocket className="w-4 h-4 mr-2" />
-                  Migrate to DAMM V2
-                </>
-              )}
-            </Button>
-            {
-
-              migrationComplete && (
-                <PoolState />
-              )
-            }
-          </div>
         </CardContent>
+        <CardFooter className="p-0 grid grid-cols-2">
+          <Button
+            onClick={() => setShowDialog(true)}
+            className="w-full rounded-none py-8 border-r"
+            size="lg"
+            disabled={migrationComplete}
+          >
+            {migrationComplete ? (
+              <>
+                <CheckCircle2 className="w-4 h-4 mr-2" />
+                Migration Complete
+              </>
+            ) : (
+              <>
+                <Rocket className="w-4 h-4 mr-2" />
+                Migrate to DAMM V2
+              </>
+            )}
+          </Button>
+          {migrationComplete && <PoolState />}
+        </CardFooter>
       </Card>
 
       <Dialog open={showDialog} onOpenChange={handleCloseDialog}>

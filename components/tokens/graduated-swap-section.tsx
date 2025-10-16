@@ -32,7 +32,6 @@ export function GraduatedSwapSection({
 
   const TOKEN_SYMBOL = "TKN";
   const SOL_BALANCE = 10.5;
-  const TOKEN_BALANCE = 0;
   const SLIPPAGE = 0.5;
 
   const wallet = useWallet();
@@ -42,7 +41,6 @@ export function GraduatedSwapSection({
   );
 
   const cpAmm = new CpAmm(connection);
-
   async function performCpAmmSwap(amountIn: BN, swapAToB: boolean) {
     if (!wallet.connected || !wallet.publicKey) {
       toast.error("Please connect your wallet first");
@@ -186,7 +184,7 @@ export function GraduatedSwapSection({
   };
 
   return (
-    <Card className="sticky top-8 border-0 rounded-none p-0 gap-0">
+    <Card className="sticky top-20 border-0 rounded-none p-0 gap-0">
       <CardContent className="p-0 gap-0">
         <Tabs
           value={activeTab}
@@ -249,7 +247,7 @@ export function GraduatedSwapSection({
           </TabsContent>
 
           <TabsContent value="sell" className="">
-            <div className="relative">
+            <div className="relative border-b">
               <Input
                 className="sm:max-w-md border-0 rounded-none focus-visible:outline-0 focus-visible:ring-0 py-8 sm:text-lg"
                 id="sell-from"
@@ -261,33 +259,25 @@ export function GraduatedSwapSection({
               <div className="flex items-center justify-between bg-muted rounded-none top-0 right-0 py-6 px-8 absolute">
                 <span className="text-sm font-medium">{TOKEN_SYMBOL}</span>
               </div>
-              <span className="text-xs text-muted-foreground text-right w-full">
-                Balance: {TOKEN_BALANCE}
-              </span>
             </div>
 
-            <div className="space-y-2 relative">
-              <div className="space-y-2">
-                <Input
-                  id="sell-to"
-                  type="number"
-                  placeholder="0.0"
-                  className="sm:max-w-md border-0 rounded-none focus-visible:outline-0 focus-visible:ring-0 py-8 sm:text-lg"
-                  readOnly
-                  value={""}
-                />
-                <div className="flex items-center justify-between bg-muted rounded-none top-0 right-0 py-6 px-8 absolute">
-                  <span className="text-sm font-medium">SOL</span>
-                </div>
-                <span className="text-xs text-muted-foreground text-right w-full">
-                  Balance: {SOL_BALANCE}
-                </span>
+            <div className="relative">
+              <Input
+                id="sell-to"
+                type="number"
+                placeholder="0.0"
+                className="sm:max-w-md border-0 rounded-none focus-visible:outline-0 focus-visible:ring-0 py-8 sm:text-lg"
+                readOnly
+                value={""}
+              />
+              <div className="flex items-center justify-between bg-muted rounded-none top-0 right-0 h-full px-8 absolute border-t">
+                <span className="text-sm font-medium">SOL</span>
               </div>
             </div>
 
             <Button
               onClick={handleSell}
-              className="w-full border-0 rounded-none py-8"
+              className="w-full border-0 rounded-none py-8 border-t"
               size="lg"
               variant="destructive"
               disabled={

@@ -24,12 +24,17 @@ export function TokenCard({ token }: TokenCardProps) {
 
   return (
     <Link href={`/tokens/${poolKey}`}>
-      <Card className="hover:shadow-lg transition-shadow gap-0 cursor-pointer h-full rounded-none border-0 p-0">
+      <Card
+        className="hover:shadow-lg transition-shadow gap-0 cursor-pointer h-full rounded-none border-0 p-0"
+      >
         <CardHeader className="pb-4 px-0">
           <div className="flex items-start gap-4">
             <div className="relative w-26 h-26 flex-shrink-0">
               <Image
-                src={token.image || "https://i.pinimg.com/1200x/b7/8f/02/b78f023aa1bca7bdada28db1c30d1fe5.jpg"}
+                src={
+                  token.image ||
+                  "https://i.pinimg.com/1200x/b7/8f/02/b78f023aa1bca7bdada28db1c30d1fe5.jpg"
+                }
                 alt={token.name || "Token"}
                 fill
                 className="object-cover"
@@ -84,7 +89,7 @@ export function TokenCard({ token }: TokenCardProps) {
             </div>
           </div>
           <div className="space-y-2 relative">
-            <div className="flex justify-between text-sm absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-8 w-full">
+            <div className="flex justify-between text-sm absolute bottom-0 left-1/2 -translate-x-1/2 px-8 w-full">
               <span className="text-muted-foreground">Progress</span>
               <span className="font-medium">{progress}%</span>
             </div>
