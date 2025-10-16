@@ -347,79 +347,81 @@ export function MigrationCard({
       </Card>
 
       <Dialog open={showDialog} onOpenChange={handleCloseDialog}>
-        <DialogContent className="sm:max-w-md border-0 rounded-none">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Rocket className="w-5 h-5" />
-              Confirm Migration
-            </DialogTitle>
-            <DialogDescription>
-              You are about to migrate {tokenName} ({tokenSymbol}) to DAMM V2
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-lg bg-transparent rounded-[32px] backdrop-blur-sm border border-primary/10 p-2">
+          <div className="p-6 rounded-3xl border bg-card">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Rocket className="w-5 h-5" />
+                Confirm Migration
+              </DialogTitle>
+              <DialogDescription>
+                You are about to migrate {tokenName} ({tokenSymbol}) to DAMM V2
+              </DialogDescription>
+            </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <Alert>
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription className="text-xs">
-                <strong>Important:</strong> This action cannot be undone. The
-                migration will:
-              </AlertDescription>
-            </Alert>
+            <div className="space-y-4 py-4">
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription className="text-xs">
+                  <strong>Important:</strong> This action cannot be undone. The
+                  migration will:
+                </AlertDescription>
+              </Alert>
 
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>Create migration metadata (if needed)</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>Create locker for vesting (if configured)</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>Migrate liquidity to DAMM V2 pool</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>Require multiple transaction approvals</span>
-              </li>
-            </ul>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Create migration metadata (if needed)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Create locker for vesting (if configured)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Migrate liquidity to DAMM V2 pool</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Require multiple transaction approvals</span>
+                </li>
+              </ul>
 
-            {migrationStep && (
-              <div className="bg-muted p-3 rounded-md">
-                <p className="text-sm font-medium">{migrationStep}</p>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
-              onClick={handleCloseDialog}
-              disabled={isMigrating}
-              className="w-full sm:w-auto"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleMigrate}
-              disabled={isMigrating}
-              className="w-full sm:w-auto"
-            >
-              {isMigrating ? (
-                <>
-                  <span className="animate-spin mr-2">⏳</span>
-                  Migrating...
-                </>
-              ) : (
-                <>
-                  <Rocket className="w-4 h-4 mr-2" />
-                  Confirm Migration
-                </>
+              {migrationStep && (
+                <div className="bg-muted p-3 rounded-md">
+                  <p className="text-sm font-medium">{migrationStep}</p>
+                </div>
               )}
-            </Button>
-          </DialogFooter>
+            </div>
+
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button
+                variant="outline"
+                onClick={handleCloseDialog}
+                disabled={isMigrating}
+                className="w-full sm:w-auto"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleMigrate}
+                disabled={isMigrating}
+                className="w-full sm:w-auto"
+              >
+                {isMigrating ? (
+                  <>
+                    <span className="animate-spin mr-2">⏳</span>
+                    Migrating...
+                  </>
+                ) : (
+                  <>
+                    <Rocket className="w-4 h-4 mr-2" />
+                    Confirm Migration
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </>
