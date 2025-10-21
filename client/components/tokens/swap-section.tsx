@@ -87,46 +87,26 @@ export function SwapSection({ tokenId }: SwapSectionProps) {
   );
 
   const getSwapQuote = async (amount: number, isBuy: boolean) => {
-    try {
-      const client = new DynamicBondingCurveClient(connection, "confirmed");
-      const virtualPoolState = await client.state.getPool(POOL_ADDRESS);
-      if (!virtualPoolState) {
-        throw new Error("Pool not found");
-      }
-
-      const poolConfigState = await client.state.getPoolConfig(
-        virtualPoolState.config
-      );
-
-      const currentPoint = await getCurrentPoint(
-        connection,
-        poolConfigState.activationType
-      );
-      
-      const decimals = isBuy ? 9 : 9;
-      const amountIn = new BN(Math.floor(amount * Math.pow(10, decimals)));
-
-      const quote = await client.pool.swapQuote({
-        virtualPool: virtualPoolState,
-        config: poolConfigState,
-        swapBaseForQuote: isBuy ? false : true,
-        amountIn,
-        slippageBps: SLIPPAGE_BPS,
-        hasReferral: false,
-        currentPoint,
-      });
-
-      console.log("Swap quote:", quote);
-      const divisor = Math.pow(10, decimals);
-      const outputAmountBN = new BN(quote.outputAmount);
-      const outputAmount = parseFloat(outputAmountBN.toString()) / divisor;
-      console.log("Out :", outputAmount);
-
-      return { quote, outputAmount };
-    } catch (error) {
-      console.error("Failed to get swap quote:", error);
-      throw error;
-    }
+    const client = new DynamicBondingCurveClient(connection, "confirmed");
+    const virtualPoolState = await client.state.getPool(POOL_ADDRESS);
+    const poolConfigState = await client.state.getPoolConfig(virtualPoolState.config);
+    
+    const currentPoint = await getCurrentPoint(connection, poolConfigState.activationType);
+    
+    const decimals = isBuy ? 9 : 6; // SOL:9, Token:6
+    const amountIn = new BN(Math.floor(amount * Math.pow(10, decimals)));
+  
+    const quote = await client.pool.swapQuote({
+      virtualPool: virtualPoolState,
+      config: poolConfigState,
+      swapBaseForQuote: !isBuy,
+      amountIn,
+      slippageBps: SLIPPAGE_BPS,
+      hasReferral: false,
+      currentPoint,
+    });
+  
+    return { quote, outputAmount: parseFloat(quote.outputAmount.toString()) / Math.pow(10, isBuy ? 6 : 9) };
   };
 
   const fetchBuyQuote = useCallback(
