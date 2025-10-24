@@ -5,7 +5,13 @@ import { TokenCard } from "./token-card";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAllTokens } from "@/lib/actions";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function TokenGrid() {
   const { data: tokens, isLoading } = useQuery({
@@ -60,10 +66,14 @@ export function TokenGrid() {
         sorted.sort((a, b) => byNumber(a.progress) - byNumber(b.progress));
         break;
       case "marketcap-desc":
-        sorted.sort((a: any, b: any) => byNumber(b.marketCap) - byNumber(a.marketCap));
+        sorted.sort(
+          (a: any, b: any) => byNumber(b.marketCap) - byNumber(a.marketCap)
+        );
         break;
       case "marketcap-asc":
-        sorted.sort((a: any, b: any) => byNumber(a.marketCap) - byNumber(b.marketCap));
+        sorted.sort(
+          (a: any, b: any) => byNumber(a.marketCap) - byNumber(b.marketCap)
+        );
         break;
       default:
         break;
@@ -89,28 +99,42 @@ export function TokenGrid() {
             <SelectContent>
               <SelectItem value="name-asc">Name (A → Z)</SelectItem>
               <SelectItem value="name-desc">Name (Z → A)</SelectItem>
-              <SelectItem value="progress-desc">Progress (High → Low)</SelectItem>
-              <SelectItem value="progress-asc">Progress (Low → High)</SelectItem>
-              <SelectItem value="marketcap-desc">Market Cap (High → Low)</SelectItem>
-              <SelectItem value="marketcap-asc">Market Cap (Low → High)</SelectItem>
+              <SelectItem value="progress-desc">
+                Progress (High → Low)
+              </SelectItem>
+              <SelectItem value="progress-asc">
+                Progress (Low → High)
+              </SelectItem>
+              <SelectItem value="marketcap-desc">
+                Market Cap (High → Low)
+              </SelectItem>
+              <SelectItem value="marketcap-asc">
+                Market Cap (Low → High)
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 divide-y divide-x sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
         {isLoading && (
           <>
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="border-0 rounded-none p-4 bg-card animate-pulse h-40" />
+            {[...Array(9)].map((_, i) => (
+              <div
+                key={i}
+                className="border rounded-none p-4 bg-card animate-pulse h-80"
+              />
             ))}
           </>
         )}
-        {!isLoading && filteredAndSorted.map((token) => (
-          <TokenCard key={token.id} token={token} />
-        ))}
+        {!isLoading &&
+          filteredAndSorted.map((token) => (
+            <TokenCard key={token.id} token={token} />
+          ))}
         {!isLoading && filteredAndSorted.length === 0 && (
-          <div className="col-span-full text-center text-muted-foreground py-10">No tokens found.</div>
+          <div className="col-span-full text-center text-muted-foreground py-10">
+            No tokens found.
+          </div>
         )}
       </div>
     </div>

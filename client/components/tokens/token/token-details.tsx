@@ -260,8 +260,9 @@ export function TokenDetails({ tokenId }: TokenDetailsProps) {
   const token = getTokenData(tokenId);
 
   return (
-    <div className="border-y uppercase mt-4">
-      <div className="space-y-4">
+    <div className="border-b uppercase">
+      <div className="w-full h-4 pointer-events-none bg-[image:repeating-linear-gradient(315deg,_#0000000d_0,_#0000000d_1px,_transparent_0,_transparent_50%)] bg-[size:10px_10px] bg-fixed dark:bg-[image:repeating-linear-gradient(315deg,_#ffffff1a_0,_#ffffff0a_1px,_transparent_0,_transparent_50%)] border-b" />
+      <div className="">
         <div className="flex items-start gap-4">
           <div className="relative w-24 h-24 flex-shrink-0">
             <Image
@@ -282,7 +283,7 @@ export function TokenDetails({ tokenId }: TokenDetailsProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 border-y divide-x">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 border-y divide-x mb-4">
           <div className="p-4">
             <p className="text-xs text-muted-foreground mb-1">Price</p>
             <p className="text-3xl">{token.price}</p>
@@ -301,14 +302,14 @@ export function TokenDetails({ tokenId }: TokenDetailsProps) {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs">
+        <div className="space-y-4">
+          <div className="flex justify-between text-xs px-4">
             <span className="text-muted-foreground">
               Bonding Curve Progress
             </span>
             <span className="font-medium">{token.progress}%</span>
           </div>
-          <Progress value={token.progress} className="h-4" />
+          <Progress value={token.progress} className="h-8" />
         </div>
       </div>
     </div>

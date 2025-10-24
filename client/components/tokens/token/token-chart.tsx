@@ -113,7 +113,7 @@ export function TokenChart({ tokenId }: TokenChartProps) {
   }, [tokenId]);
 
   return (
-    <div className="w-full border-y uppercase">
+    <div className="w-full border-t uppercase">
       <div ref={chartContainerRef} className="w-full p-4" />
     </div>
   );
