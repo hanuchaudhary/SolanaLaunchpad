@@ -39,7 +39,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <Navbar />
-            <main className="mt-20 w-full">{children}</main>
+            <main className="md:mt-14 mt-11 w-full">{children}</main>
             <Toaster
               position="top-left"
               toastOptions={{

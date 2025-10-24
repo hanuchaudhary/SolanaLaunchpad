@@ -157,14 +157,18 @@ export function Navbar() {
   const isTerminalPage = pathname.startsWith("/tokens/");
 
   return (
-    <>
+    <>age
       <header className="w-full border-b fixed top-0 left-0 right-0 z-50 bg-background uppercase">
         <div
           className={`relative transition-all duration-200 ${
             isTerminalPage ? "max-w-full" : "max-w-7xl"
           } mx-auto md:border-x`}
         >
-          {isTerminalPage ? null : <Pattern />}
+          {isTerminalPage ? null : (
+            <div className="md:block hidden">
+              <Pattern />
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <Link href="/" className="w-30 md:ml-10 md:scale-150">
               <Image src="/logogreen.png" alt="Logo" width={500} height={500} />

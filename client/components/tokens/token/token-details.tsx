@@ -283,7 +283,7 @@ export function TokenDetails({ tokenId }: TokenDetailsProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 border-y divide-x mb-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 md:gap-4 border-y divide-x md:divide-y-0 divide-y mb-4">
           <div className="p-4">
             <p className="text-xs text-muted-foreground mb-1">Price</p>
             <p className="text-3xl">{token.price}</p>
