@@ -130,7 +130,7 @@ export function TokenGrid() {
         )}
         {!isLoading &&
           filteredAndSorted.map((token) => (
-            <TokenCard key={token.id} token={token} />
+            <TokenCard key={token.id} token={token} href={`/tokens/${token.id}`} />
           ))}
         {!isLoading && filteredAndSorted.length === 0 && (
           <div className="col-span-full text-center text-muted-foreground py-10">

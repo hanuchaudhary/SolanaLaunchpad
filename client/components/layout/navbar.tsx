@@ -14,6 +14,7 @@ import { HowItWorksModal } from "../landing/how-it-works-modal";
 import { motion, AnimatePresence } from "motion/react";
 import { usePathname } from "next/navigation";
 import Pattern from "../landing/pattern";
+import { useTheme } from "next-themes";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -24,7 +25,7 @@ export function Navbar() {
   const [isManualConnection, setIsManualConnection] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
-
+  const { theme } = useTheme();
   const { connected, publicKey, connect, disconnect, connecting, wallet } =
     useWallet();
   const { setVisible } = useWalletModal();
@@ -157,7 +158,8 @@ export function Navbar() {
   const isTerminalPage = pathname.startsWith("/tokens/");
 
   return (
-    <>age
+    <>
+      age
       <header className="w-full border-b fixed top-0 left-0 right-0 z-50 bg-background uppercase">
         <div
           className={`relative transition-all duration-200 ${
@@ -170,8 +172,18 @@ export function Navbar() {
             </div>
           )}
           <div className="flex items-center justify-between">
-            <Link href="/" className="w-30 md:ml-10 md:scale-150">
-              <Image src="/logogreen.png" alt="Logo" width={500} height={500} />
+            <Link
+              href="/"
+              className={`w-30 md:ml-10 md:scale-150 ${
+                theme === "light" ? "invert-50" : ""
+              }`}
+            >
+              <Image
+                src={theme === "light" ? "/logoblue.png" : "/logogreen.png"}
+                alt="Logo"
+                width={500}
+                height={500}
+              />
             </Link>
 
             <nav className="hidden md:flex items-center divide-x h-full">
@@ -339,7 +351,6 @@ export function Navbar() {
           )}
         </AnimatePresence>
       </header>
-
       <WalletModal
         open={showWalletModal}
         onClose={() => setShowWalletModal(false)}

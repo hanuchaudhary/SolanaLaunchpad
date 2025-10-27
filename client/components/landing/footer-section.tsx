@@ -10,9 +10,11 @@ import {
   IconBrandLinkedinFilled,
   IconBrandX,
 } from "@tabler/icons-react";
+import { useTheme } from "next-themes";
 
 export function FooterSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { theme } = useTheme();
 
   return (
     <footer className="bg-background relative border-b uppercase">
@@ -20,9 +22,13 @@ export function FooterSection() {
       <div className="px-8 py-16 border-t">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="md:col-span-2 space-y-8">
-            <div className="flex items-start gap-4">
+            <div className="flex items-center gap-4">
               <Image
-                src="/onlyfoundersdotfun cat-Photoroom.png"
+                src={
+                  theme === "light"
+                    ? "/logomarkblue.png"
+                    : "/logomarkgreen.png"
+                }
                 alt="OnlyFounders Logo"
                 width={80}
                 height={80}

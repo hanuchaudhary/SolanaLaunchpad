@@ -7,6 +7,7 @@ import { useRef } from "react";
 import { IconCheck, IconRocket, IconTrendingUp } from "@tabler/icons-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
 
 interface AudienceCardProps {
   title: string;
@@ -33,7 +34,7 @@ const AudienceCard = ({
 }: AudienceCardProps) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-
+  const { theme } = useTheme();
   return (
     <motion.div
       ref={ref}
@@ -43,23 +44,32 @@ const AudienceCard = ({
       className="py-8"
     >
       <div
-        className={`flex flex-col lg:flex-row gap-12 items-center ${reverse ? "lg:flex-row-reverse" : ""}`}
+        className={`flex flex-col lg:flex-row gap-12 items-center ${
+          reverse ? "lg:flex-row-reverse" : ""
+        }`}
       >
         <div className="lg:w-1/2 flex justify-center">
           <motion.div
             initial={{ y: 100, x: -100, opacity: 0 }}
-            animate={isInView ? { y: 0, x: 0, opacity: 1 } : { y: 100, x: -100, opacity: 0 }}
+            animate={
+              isInView
+                ? { y: 0, x: 0, opacity: 1 }
+                : { y: 100, x: -100, opacity: 0 }
+            }
             transition={{ duration: 0.6, delay: delay + 0.2 }}
-            className="relative"
+            className="relative h-95 w-full flex items-center justify-center"
           >
             <Image
-              src={icon}
+              src={theme === "dark" ? "/greenbg.png" : "/bluebg.png"}
               alt="icon"
-              className="relative z-10 md:scale-100 scale-75"
+              className="relative z-10 h-full w-full object-cover rounded-3xl overflow-hidden"
               height={350}
               width={350}
             />
-            <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full"></div>
+            <span className="absolute z-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 md:text-[2rem] font-bold lowercase text-background">
+              On1yFounders
+            </span>
+            {/* <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full"></div> */}
           </motion.div>
         </div>
 
@@ -114,7 +124,7 @@ export function AudienceCardsSection() {
         "Reputation verified access",
         "Onchain fundraising with ownership intact",
       ],
-      icon: "/rocket_transparent.png",
+      icon: "/rocket.png",
       href: "/create",
       buttonText: "Launch Your Token",
       buttonIcon: IconRocket,
@@ -130,7 +140,7 @@ export function AudienceCardsSection() {
         "Tokenized capital opportunities",
         "Fully transparent onchain performance",
       ],
-      icon: "/person_transparent.png",
+      icon: "/cat.png",
       href: "/tokens",
       buttonText: "Explore",
       buttonIcon: IconTrendingUp,
@@ -140,7 +150,10 @@ export function AudienceCardsSection() {
   ];
 
   return (
-    <section ref={ref} className="bg-background relative mx-auto border-y uppercase">
+    <section
+      ref={ref}
+      className="bg-background relative mx-auto border-y uppercase"
+    >
       <div className="px-4 md:px-8 py-16 md:py-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

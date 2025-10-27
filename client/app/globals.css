@@ -240,8 +240,13 @@
   font-weight: 500;
   padding: 0.5rem 1rem;
   border-radius: "20px";
+  overflow: hidden;
   box-shadow: var(--shadow-sm);
   transition: background-color 0.2s, box-shadow 0.2s;
+}
+.wallet-adapter-button:hover{
+  background-color: var(--accent);
+  box-shadow: var(--shadow-md);
 }
 
 .wallet-adapter-button:hover{

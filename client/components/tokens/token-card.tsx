@@ -6,9 +6,10 @@ import { Progress } from "@/components/ui/progress";
 
 interface TokenCardProps {
   token: any; // Pool data from Meteora SDK
+  href: string;
 }
 
-export function TokenCard({ token }: TokenCardProps) {
+export function TokenCard({ token, href }: TokenCardProps) {
   const poolKey =
     token.publicKey?.toString() || token.poolKey?.toString() || "unknown";
   const tokenMint = token.tokenMint?.toString() || "N/A";
@@ -23,7 +24,7 @@ export function TokenCard({ token }: TokenCardProps) {
   const quoteReserve = token.quoteReserve?.toString() || "0";
 
   return (
-    <Link href={`/tokens/${poolKey}`}>
+  <Link href={href}>
       <Card
         className="hover:shadow-lg uppercase transition-shadow gap-0 cursor-pointer h-full rounded-none border-0 p-0"
       >

@@ -52,7 +52,7 @@ export default function CreateTokenPage() {
 
   return (
     <div
-      className="max-w-6xl mx-auto py-8 uppercase"
+      className="max-w-7xl mx-auto py-8 uppercase"
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}

@@ -4,11 +4,15 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { IconArrowRight } from "@tabler/icons-react";
 import { motion } from "motion/react";
+import { DotScreenShader } from "../ui/dot-shader-background";
 
 export function HeroSection() {
   return (
     <section className="bg-background relative uppercase min-h-[calc(100vh-5rem)] flex items-center">
-      <div className="w-full px-4 md:px-8 py-16 md:py-24">
+      <div className="absolute inset-0">
+        <DotScreenShader />
+      </div>
+      <div className="relative w-full px-4 md:px-8 py-16 md:py-24">
         <div className="flex items-center justify-center text-center">
           <div className="space-y-8 w-full">
             <motion.div
@@ -17,11 +21,11 @@ export function HeroSection() {
               transition={{ duration: 0.5 }}
               className="space-y-3 max-w-3xl mx-auto"
             >
-              <h2 className="text-sm md:text-xl font-bold tracking-tight">
+              <h2 className="text-sm md:text-xl font-bold tracking-tight leading-none">
                 Powered by <span className="text-primary">Founder</span>{" "}
                 Reputation
               </h2>
-              <h1 className="text-3xl md:text-7xl font-bold tracking-tight leading-tight">
+              <h1 className="text-3xl md:text-7xl font-bold tracking-tight leading-none">
                 The First Onchain{" "}
                 <span className="text-primary">Launchpad</span>
               </h1>

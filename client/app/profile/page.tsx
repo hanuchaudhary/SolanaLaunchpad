@@ -1,13 +1,16 @@
 "use client";
 
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchUserTokens } from "@/lib/actions";
+import { fetchUserTokens, getCreatorTokens } from "@/lib/actions";
 import { TokenCard } from "@/components/tokens/token-card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import BackButton from "@/components/BackButton";
 import Pattern from "@/components/landing/pattern";
+import { PoolAccountData } from "@/lib/pool-utils";
+import { PublicKey } from "@solana/web3.js";
+import Link from "next/link";
 
 export default function ProfilePage() {
   const { publicKey } = useWallet();
@@ -15,10 +18,20 @@ export default function ProfilePage() {
     () => publicKey?.toString() ?? "F3k...9s2A",
     [publicKey]
   );
-  const short = useMemo(
-    () => (address ? `${address.slice(0, 4)}...${address.slice(-4)}` : ""),
-    [address]
-  );
+  const [loading, setLoading] = React.useState(false);
+  const [creatorTokens, setCreatorTokens] = React.useState<PoolAccountData[]>();
+
+  React.useEffect(() => {
+    if (!address) return;
+    setLoading(true);
+    const ct = getCreatorTokens(address).then((tokens) => {
+      //@ts-ignore
+      setCreatorTokens(tokens);
+      return tokens;
+    });
+    setLoading(false);
+    console.log("Creator Tokens:", ct);
+  }, [address]);
 
   const { data: tokens, isLoading } = useQuery({
     enabled: !!address,
@@ -30,7 +43,7 @@ export default function ProfilePage() {
 
   return (
     <div className="relative max-w-7xl border-x mx-auto">
-      <Pattern/>
+      <Pattern />
       <BackButton href="/tokens" />
       <div className="border-b">
         <div className="flex items-center gap-4">
@@ -53,7 +66,9 @@ export default function ProfilePage() {
       </div>
 
       <div className="border-b">
-        <h2 className="text-xl font-semibold py-4 px-6 border-b">Your Tokens</h2>
+        <h2 className="text-xl font-semibold py-4 px-6 border-b">
+          Your Tokens
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-y divide-x">
           {isLoading && (
             <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-y divide-x">
@@ -66,7 +81,35 @@ export default function ProfilePage() {
             </div>
           )}
           {!isLoading &&
-            tokens?.map((t) => <TokenCard key={t.createdAt} token={t} />)}
+            tokens?.map((t) => (
+              <TokenCard
+                key={t.createdAt}
+                token={t}
+                href={`/profile/${t.quoteMint}`}
+              />
+            ))}
+          {/* {creatorTokens &&
+            !isLoading &&
+            creatorTokens.map((t: PoolAccountData, idx: number) => (
+              <Link
+                href={`/profile/${new PublicKey(t.publicKey)}`}
+                key={idx}
+                className="p-4 space-y-2"
+              >
+                <div>
+                  <p className="text-xs text-muted-foreground">Pool Address</p>
+                  <p className="font-mono text-sm break-all">
+                    {new PublicKey(t.publicKey).toString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Mint Address</p>
+                  <p className="font-mono text-sm break-all">
+                    {new PublicKey(t.account.baseMint).toString()}
+                  </p>
+                </div>
+              </Link>
+            ))} */}
           {!isLoading && tokens?.length === 0 && (
             <div className="col-span-full text-center text-muted-foreground py-10">
               No tokens found.

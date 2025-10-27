@@ -64,7 +64,7 @@ export default function WalletModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg bg-transparent rounded-[32px] backdrop-blur-sm border border-primary/10 p-2">
         <div className="p-6 rounded-3xl border bg-card">
-          <DialogHeader>
+          <DialogHeader className="mb-2">
             <DialogTitle>Wallet Connected</DialogTitle>
             <DialogDescription>
               Your wallet is successfully connected

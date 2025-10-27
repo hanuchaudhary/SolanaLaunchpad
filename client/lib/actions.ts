@@ -1,12 +1,10 @@
 "use client";
 
 import {
-  DAMM_V2_MIGRATION_FEE_ADDRESS,
-  deriveDammV2PoolAddress,
   DynamicBondingCurveClient,
+  VirtualPool,
 } from "@meteora-ag/dynamic-bonding-curve-sdk";
 import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import { toast } from "sonner";
 
 export async function fetchSolBalance(
   connection: Connection,
@@ -299,3 +297,18 @@ export async function fetchAllTokens(): Promise<TokenCardItem[]> {
     },
   ];
 }
+
+export const getCreatorTokens = async (creatorAddress: string) => {
+  try {
+    const connection = new Connection(process.env.NEXT_PUBLIC_RPC_URL!, {
+      commitment: "confirmed",
+    });
+    const client = new DynamicBondingCurveClient(connection, "confirmed");
+    const creatorTokens = await client.state.getPoolsByCreator(creatorAddress);
+    console.log("ct", creatorTokens);
+
+    return creatorTokens;
+  } catch (error) {
+    console.log(error);
+  }
+};
