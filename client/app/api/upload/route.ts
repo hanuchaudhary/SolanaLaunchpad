@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
-import { DynamicBondingCurveClient, deriveDbcPoolAddress } from "@meteora-ag/dynamic-bonding-curve-sdk";
+import {
+  DynamicBondingCurveClient,
+  deriveDbcPoolAddress,
+} from "@meteora-ag/dynamic-bonding-curve-sdk";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getVanityPair } from "@/lib/db";
 import bs58 from "bs58";
 
 const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL as string;
 const POOL_CONFIG_KEY = process.env.POOL_CONFIG_KEY;
-const QUOTE_MINT = process.env.QUOTE_MINT || "So11111111111111111111111111111111111111112";
+const QUOTE_MINT =
+  process.env.QUOTE_MINT || "So11111111111111111111111111111111111111112";
 
 const DO_SPACES_ACCESS_KEY_ID = process.env.DO_SPACES_ACCESS_KEY_ID as string;
 const DO_SPACES_SECRET_ACCESS_KEY = process.env
@@ -35,6 +39,9 @@ export async function POST(req: Request) {
       initialMarketCap = 5000,
       migrationMarketCap = 75000,
       userWallet,
+      twitter,
+      website,
+      telegram,
     } = await req.json();
 
     if (!tokenName || !tokenTicker || !userWallet) {
@@ -80,6 +87,9 @@ export async function POST(req: Request) {
         tokenDescription,
         imageUrl,
         mint: dynamicName,
+        twitter,
+        website,
+        telegram,
       });
       if (!uploadedMetadataUrl) {
         return NextResponse.json(
@@ -116,13 +126,13 @@ export async function POST(req: Request) {
     const generatedKeypair = Keypair.generate();
     const mintPublicKey = generatedKeypair.publicKey;
     console.log("Using generated mint address:", mintPublicKey.toString());
-    
+
     const poolTx = await dbcClient.pool.createPool({
       config: new PublicKey(POOL_CONFIG_KEY as string),
       baseMint: mintPublicKey,
       name: tokenName,
       symbol: tokenTicker,
-      uri: metadataUrl|| "",
+      uri: metadataUrl || "",
       payer: userPublicKey,
       poolCreator: userPublicKey,
     });
@@ -203,6 +213,9 @@ async function uploadTokenMetadata(params: {
   tokenDescription?: string;
   imageUrl?: string;
   mint: string;
+  twitter?: string;
+  website?: string;
+  telegram?: string;
 }): Promise<string | false> {
   try {
     const metadata = {
@@ -210,6 +223,9 @@ async function uploadTokenMetadata(params: {
       symbol: params.tokenTicker,
       description: params.tokenDescription || "",
       image: params.imageUrl || "",
+      twitter: params.twitter || "",
+      website: params.website || "",
+      telegram: params.telegram || "",
       attributes: [
         {
           trait_type: "Platform",
@@ -220,7 +236,7 @@ async function uploadTokenMetadata(params: {
           value: "Onlyfounders.fu",
         },
       ],
-      "tags" : ["OnlyFounders.fun", "MEME", "#ONLY"],
+      tags: ["OnlyFounders.fun", "MEME", "#ONLY"],
     };
 
     const fileName = `metadata/${params.mint}.json`;

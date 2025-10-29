@@ -1,0 +1,108 @@
+import { TokenDetails } from "@/components/tokens/token/token-details";
+import SwapContainer from "@/components/tokens/swap/swap-container";
+import { TokenChart } from "@/components/tokens/token/token-chart";
+import { HoldersTradesTable } from "@/components/tokens/token/holders-trades-table";
+import { TokenInfoCard } from "@/components/tokens/token/token-info-card";
+import { MobileSwapModal } from "@/components/tokens/swap/mobile-swap-modal";
+import { RecentlyOpened } from "@/components/tokens/token/recently-opened";
+import { TokenPageWrapper } from "@/components/tokens/token/token-page-wrapper";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
+
+export default async function TokenDetailPage({
+  params,
+}: {
+  params: Promise<{ mint: string }>;
+}) {
+  const { mint } = await params;
+  return (
+    <TokenPageWrapper tokenId={mint}>
+      <RecentlyOpened currentTokenId={mint} />
+      <div className="relative uppercase">
+        <div className="lg:hidden pb-24">
+          <div className="border-b">
+            <TokenDetails tokenId={mint} />
+          </div>
+          <div className="relative">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-10">
+              <span className="text-white text-2xl font-semibold mb-4">
+                COMING SOON
+              </span>
+              <button
+                className="px-8 py-6 bg-primary text-background font-medium"
+                onClick={() =>
+                  window.open("https://jup.ag/tokens/" + mint, "_blank")
+                }
+              >
+                Trade on Jupiter
+              </button>
+            </div>
+            <div className="border-b relative">
+              <TokenChart tokenId={mint} />
+            </div>
+            <div className="border-b">
+              <HoldersTradesTable tokenId={mint} />
+            </div>
+            <div className="border-b">
+              <TokenInfoCard tokenId={mint} />
+            </div>
+          </div>
+        </div>
+        <div className="hidden lg:grid lg:grid-cols-4 lg:divide-x h-[calc(100vh-7.5rem)] overflow-hidden">
+          <div className="flex col-span-1 flex-col border-l border-t overflow-auto hide-scrollbar">
+            <TokenDetails tokenId={mint} />
+            <TokenInfoCard tokenId={mint} />
+          </div>
+          <div className="col-span-2 flex flex-col overflow-hidden relative">
+            <ResizablePanelGroup direction="vertical">
+              <ResizablePanel defaultSize={65} minSize={30}>
+                <div className="h-full overflow-auto hide-scrollbar">
+                  <TokenChart tokenId={mint} />
+                </div>
+              </ResizablePanel>
+              <ResizableHandle />
+              <ResizablePanel defaultSize={35} minSize={30}>
+                <div className="h-full overflow-auto hide-scrollbar">
+                  <HoldersTradesTable tokenId={mint} />
+                </div>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-10">
+              <span className="text-white text-2xl font-semibold mb-4">
+                COMING SOON
+              </span>
+              <button
+                className="px-8 py-6 bg-primary text-background font-medium"
+                onClick={() =>
+                  window.open("https://jup.ag/tokens/" + mint, "_blank")
+                }
+              >
+                Trade on Jupiter
+              </button>
+            </div>
+          </div>
+          <div className="col-span-1 border overflow-auto relative">
+            <SwapContainer mint={mint} />
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-10">
+              <span className="text-white text-2xl font-semibold mb-4">
+                COMING SOON
+              </span>
+              <button
+                className="px-8 py-6 bg-primary text-background font-medium"
+                onClick={() =>
+                  window.open("https://jup.ag/tokens/" + mint, "_blank")
+                }
+              >
+                Trade on Jupiter
+              </button>
+            </div>
+          </div>
+        </div>
+        {/* <MobileSwapModal tokenName={"tokenName"} tokenId={mint} /> */}
+      </div>
+    </TokenPageWrapper>
+  );
+}

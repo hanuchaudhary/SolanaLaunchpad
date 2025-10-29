@@ -1,20 +1,56 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { Token } from "@/types/token";
+
 interface TokenInfoCardProps {
   tokenId: string;
 }
 
 export function TokenInfoCard({ tokenId }: TokenInfoCardProps) {
-  const tokenInfo = {
-    description:
-      "Mini pekka is a powerful token on the Solana blockchain, designed for fast and efficient transactions.",
-    website: "https://onlyfounder.fun",
-    telegram: "https://t.me/minipekka",
-    twitter: "https://twitter.com/minipekka",
-    totalTransactions: "12,453",
-    uniqueHolders: "8,234",
-    volume24h: "$45,678",
-    priceChange24h: "+12.5%",
+  const [token, setToken] = useState<Token | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch(`/api/tokens/${tokenId}`);
+        const data = await res.json();
+        
+        if (data.success) {
+          setToken(data.token);
+        }
+      } catch (err) {
+        console.error("Error fetching token:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchToken();
+  }, [tokenId]);
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-fit border-t uppercase p-4 animate-pulse">
+        <div className="h-32 bg-muted rounded"></div>
+      </div>
+    );
+  }
+
+  if (!token) {
+    return null;
+  }
+
+  const formatNumber = (num: number | null) => {
+    if (num === null || num === undefined) return "$0";
+    if (num >= 1000000) {
+      return `$${(num / 1000000).toFixed(2)}M`;
+    } else if (num >= 1000) {
+      return `$${(num / 1000).toFixed(2)}K`;
+    }
+    return `$${num.toFixed(2)}`;
   };
 
   return (
@@ -25,7 +61,7 @@ export function TokenInfoCard({ tokenId }: TokenInfoCardProps) {
             Description
           </h4>
           <p className="text-sm normal-case leading-relaxed">
-            {tokenInfo.description}
+            {token.description || "No description available"}
           </p>
         </div>
 
@@ -34,9 +70,9 @@ export function TokenInfoCard({ tokenId }: TokenInfoCardProps) {
             Links
           </h4>
           <div className="flex flex-wrap gap-2">
-            {tokenInfo.website && (
+            {token.website && (
               <a
-                href={tokenInfo.website}
+                href={token.website}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-3 py-1 bg-secondary hover:bg-secondary/80 border text-xs transition-colors"
@@ -44,9 +80,9 @@ export function TokenInfoCard({ tokenId }: TokenInfoCardProps) {
                 Website
               </a>
             )}
-            {tokenInfo.telegram && (
+            {token.telegram && (
               <a
-                href={tokenInfo.telegram}
+                href={token.telegram}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-3 py-1 bg-secondary hover:bg-secondary/80 border text-xs transition-colors"
@@ -54,9 +90,9 @@ export function TokenInfoCard({ tokenId }: TokenInfoCardProps) {
                 Telegram
               </a>
             )}
-            {tokenInfo.twitter && (
+            {token.twitter && (
               <a
-                href={tokenInfo.twitter}
+                href={token.twitter}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-3 py-1 bg-secondary hover:bg-secondary/80 border text-xs transition-colors"
@@ -69,32 +105,44 @@ export function TokenInfoCard({ tokenId }: TokenInfoCardProps) {
 
         <div>
           <h4 className="text-sm font-bold text-muted-foreground mb-2">
-            Statistics
+            Token Information
           </h4>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">24h Volume:</span>
-              <span className="font-bold">{tokenInfo.volume24h}</span>
+              <span className="text-muted-foreground">Market Cap:</span>
+              <span className="font-bold">{formatNumber(token.marketCap)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">24h Change:</span>
-              <span
-                className={`font-bold ${
-                  tokenInfo.priceChange24h.startsWith("+")
-                    ? "text-primary"
-                    : "text-red-500"
-                }`}
-              >
-                {tokenInfo.priceChange24h}
-              </span>
+              <span className="text-muted-foreground">Volume:</span>
+              <span className="font-bold">{formatNumber(token.volume)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Total Transactions:</span>
-              <span className="font-bold">{tokenInfo.totalTransactions}</span>
+              <span className="text-muted-foreground">Liquidity:</span>
+              <span className="font-bold">{formatNumber(token.liquidity)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Unique Holders:</span>
-              <span className="font-bold">{tokenInfo.uniqueHolders}</span>
+              <span className="text-muted-foreground">Progress:</span>
+              <span className="font-bold">{token.bondingCurveProgress ?? 0}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 className="text-sm font-bold text-muted-foreground mb-2">
+            Addresses
+          </h4>
+          <div className="space-y-2">
+            <div className="flex flex-col text-sm">
+              <span className="text-muted-foreground mb-1">Mint Address:</span>
+              <span className="font-mono text-xs break-all">{token.mintAddress}</span>
+            </div>
+            <div className="flex flex-col text-sm">
+              <span className="text-muted-foreground mb-1">Pool Address:</span>
+              <span className="font-mono text-xs break-all">{token.poolAddress}</span>
+            </div>
+            <div className="flex flex-col text-sm">
+              <span className="text-muted-foreground mb-1">Creator:</span>
+              <span className="font-mono text-xs break-all">{token.creatorAddress}</span>
             </div>
           </div>
         </div>

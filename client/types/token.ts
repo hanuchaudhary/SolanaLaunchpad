@@ -1,24 +1,29 @@
 export interface Token {
-  id: string;
+  id?: number;
   name: string;
   symbol: string;
-  description: string;
-  image: string;
-  marketCap: string;
-  volume: string;
-  progress: number;
-  price?: string;
-  holders?: string;
-  totalSupply?: string;
-  contractAddress?: string;
-  creator?: string;
-  socialLinks?: SocialLinks;
+  description: string | null;
+  mintAddress: string;
+  poolAddress: string;
+  website: string | null;
+  twitter: string | null;
+  telegram: string | null;
+  imageUrl: string | null;
+  metadataUrl: string | null;
+  creatorAddress: string;
+  bondingCurveProgress: number | null;
+  volume: number | null;
+  liquidity: number | null;
+  marketCap: number | null;
+
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }
 
 export interface SocialLinks {
-  twitter?: string;
-  telegram?: string;
-  website?: string;
+  twitter: string;
+  telegram: string;
+  website: string;
 }
 
 export interface TokenFormData {

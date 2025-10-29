@@ -10,10 +10,10 @@ import { toast } from "sonner";
 import { DynamicBondingCurveClient } from "@meteora-ag/dynamic-bonding-curve-sdk";
 
 interface SwapContainerProps {
-  poolKey: string;
+  mint: string;
 }
 
-export function SwapContainer({ poolKey }: SwapContainerProps) {
+export function SwapContainer({ mint }: SwapContainerProps) {
   const [isGraduated, setIsGraduated] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<"buy" | "sell">("buy");
 
@@ -66,7 +66,7 @@ export function SwapContainer({ poolKey }: SwapContainerProps) {
   return isGraduated ? (
     <GraduatedSwapSection activeTab={activeTab} onTabChange={setActiveTab} />
   ) : (
-    <SwapSection tokenId={poolKey} />
+    <SwapSection tokenId={mint} />
   );
 }
 

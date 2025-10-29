@@ -95,6 +95,8 @@ export function TokenCreationForm({
         poolTx,
         tokenMint,
         poolAddress: responsePoolAddress,
+        metadataUrl,
+        imageUrl,
         // vid,
       } = response.data;
       const transaction = Transaction.from(Buffer.from(poolTx, "base64"));
@@ -124,6 +126,14 @@ export function TokenCreationForm({
         mint: tokenMint,
         // vid,
         userWallet: wallet.publicKey?.toString(),
+        tokenName: formData.name,
+        tokenTicker: formData.symbol,
+        tokenDescription: formData.description,
+        imageUrl: imageUrl,
+        metadataUrl: metadataUrl,
+        twitter: formData.socialLinks.twitter,
+        telegram: formData.socialLinks.telegram,
+        website: formData.socialLinks.website,
       });
       const { signature, poolAddress } = finalResponse.data;
       const confirmation = await connection.confirmTransaction(
